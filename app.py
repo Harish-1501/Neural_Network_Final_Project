@@ -9,6 +9,7 @@
 #
 # Expected model I/O (from your uploaded model):
 #   Input:  int32 token IDs, shape [batch, 512], pad/truncate with 0s
+#   Output: float32 sigmoid probability for the positive class, shape [batch, 1]
 #
 # Project structure suggestion:
 #   models/
@@ -16,6 +17,7 @@
 #     tokenizer.json   (or tokenizer.zip containing tokenizer.json)
 #   app.py
 #   requirements.txt   (tensorflow, streamlit, numpy, pandas)
+
 
 from __future__ import annotations
 
