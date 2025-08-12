@@ -90,7 +90,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("🧠 Text Classification — Streamlit Frontend")
+st.title("🧠 Toxicity Prediction")
 st.caption(
     "Feed raw text → we apply your saved tokenizer → model returns a positive-class probability (sigmoid)."
 )
@@ -207,7 +207,7 @@ with st.expander("Runtime status", expanded=False):
 # Sidebar controls
 # -----------------------------
 st.sidebar.header("⚙️ Settings")
-thresh = st.sidebar.slider("Decision threshold (≥ → positive)", 0.0, 1.0, 0.50, 0.01)
+thresh = st.sidebar.slider("Decision threshold (Recommended : 0.6)", 0.0, 1.0, 0.50, 0.01)
 
 # thresh = st.sidebar.number_input(
 #     "Decision threshold (≥ → positive)",

@@ -1,0 +1,9 @@
+{
+  "model": "bilstm",
+  "best_threshold": 0.0584992915391922,
+  "best_val_f1": 0.9501312335953009,
+  "roc_auc": 0.8887976029383337,
+  "pr_auc": 0.9858452591858716,
+  "support_pos_test": 739,
+  "support_neg_test": 84
+}
