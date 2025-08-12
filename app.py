@@ -67,7 +67,7 @@ DEFAULT_POS_LABEL = "positive"
 # Page setup & styles
 # -----------------------------
 st.set_page_config(
-    page_title="Text Classifier • best.keras",
+    page_title="Toxicity Prediction",
     page_icon="🧠",
     layout="wide",
 )
