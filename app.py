@@ -207,7 +207,7 @@ with st.expander("Runtime status", expanded=False):
 # Sidebar controls
 # -----------------------------
 st.sidebar.header("⚙️ Settings")
-thresh = st.sidebar.slider("Decision threshold (Recommended : 0.6)", 0.0, 1.0, 0.50, 0.01)
+thresh = st.sidebar.slider("Decision Threshold", 0.0, 1.0, 0.50, 0.01)
 
 # thresh = st.sidebar.number_input(
 #     "Decision threshold (≥ → positive)",
