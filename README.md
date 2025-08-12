@@ -1,57 +1,11 @@
-# Text Classification Web App (Streamlit + Keras)
+# YouTube Comment Toxicity Classifier (Streamlit + Keras BiLSTM)
 
-A simple Streamlit UI that loads your saved Keras model (`best.keras`) and tokenizer (`tokenizer.json` or `tokenizer.zip`). 
-It accepts raw text, applies the exact tokenizer you trained with, pads/truncates to 512 tokens, and returns the model’s sigmoid probability for the positive class.
-
----
-
-## 🧱 Project Structure
-
-```
-your-project/
-  models/
-    best.keras
-    tokenizer.json        # or tokenizer.zip (must contain tokenizer.json)
-  app.py                  # from the canvas
-  requirements.txt        # this file
-  README.md               # this file
-```
-
-> **Model I/O (from your uploaded model):**  
-> • **Input:** int32 token IDs, shape `[batch, 512]`, padded with `0`s (mask_zero).  
-> • **Output:** float32 sigmoid, shape `[batch, 1]` (probability of positive class).
+A simple web app for classifying YouTube comments as **toxic / non‑toxic** using a trained **BiLSTM** model.  
+Built with **Streamlit**, loads a saved model (`best.keras`) and tokenizer (`tokenizer.json` or `tokenizer.zip`), and supports both **single-text** and **batch CSV** predictions.
 
 ---
 
-## 💾 Installation
 
-1) (Optional) Create a fresh virtual environment
-```bash
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-# macOS/Linux:
-source .venv/bin/activate
-```
-
-2) Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-> **Note:** We pin `numpy<2.0` because TensorFlow 2.15 is not compatible with NumPy 2.x.
-
----
-
-## ▶️ Run Locally
-
-Make sure `best.keras` and your tokenizer are inside `models/` as shown above, then run:
-```bash
-streamlit run app.py
-```
-
-Open the URL that Streamlit prints (usually http://localhost:8501).
-
----
 
 ## 🧪 How to Use
 
@@ -79,22 +33,136 @@ You can also rename the positive/negative labels in the sidebar settings.
 
 ---
 
-## ❗ Troubleshooting
+## ✨ Features
 
-- **“Model not found”** — Ensure `models/best.keras` exists relative to `app.py`.
-- **“Tokenizer not found”** — Ensure `models/tokenizer.json` (or `models/tokenizer.zip` containing a `tokenizer.json`) exists.
-- **Import/ABI errors with TensorFlow** — Use Python 3.9–3.11 with `tensorflow==2.15.0`. On Apple Silicon, the CPU wheel is usually fine for this app.
-- **Blank or NaN probabilities** — Check that the tokenizer used at inference is the exact one from training (same vocab and preprocessing).
-
----
-
-## 🔒 Notes
-
-- This app is **UI-only**. If you need a REST API, we can add a small FastAPI or Flask service with the same preprocessing and model.
-- Text longer than **512 tokens** will be truncated on the right (post-truncation). Shorter text is padded with zeros.
+- **Single-text prediction** with probability bar and label.
+- **Batch CSV prediction** with preview + downloadable results.
+- **Exact training-time tokenizer** (JSON or inside ZIP) applied at inference.
+- **Precise threshold control** (number input), with optional **invert probability (1 − p)** toggle.
+- **Keras 3–aware loading** (uses `keras.saving.load_model`, falls back to `tf.keras` if needed).
+- **Runtime debug panel** showing raw sigmoid and used probability for transparency.
 
 ---
 
-## 📜 License
+## 🧠 Model
+
+- **Architecture:** Embedding (vocab=20,000, dim=128, `mask_zero=True`) → SpatialDropout1D(0.2) → **Bidirectional LSTM(64, return_sequences=True)** → GlobalMaxPooling1D → Dense(64, ReLU) → Dropout(0.3) → Dense(1, **sigmoid**).
+- **Input:** int32 token IDs, **shape `[batch, 512]`**, padded/truncated with `0`s (post).
+- **Output:** float32 **sigmoid** `P(class=1)` (probability of the trained positive class).
+- **Validation/held-out metrics (provided by user):**
+  - **best_threshold:** `0.0487249419`
+  - **best_val_f1:** `0.9514563107`
+  - **ROC AUC:** `0.8839164895`
+  - **PR AUC:** `0.9847274865`
+  - **Support (test):** pos=`739`, neg=`84`
+
+> ⚠️ Be sure what **class 1** meant in your training (e.g., *toxic*). If your UI calls the opposite class “positive”, either rename labels or use the **Invert probability (1 − p)** toggle.
+
+---
+
+## 🗂️ Repository Structure
+
+```
+.
+├── app.py                  # Streamlit app
+├── requirements.txt        # Python dependencies
+├── models/
+│   ├── best.keras          # Trained Keras model (Keras 3 format)
+│   └── tokenizer.json      # Or tokenizer.zip containing tokenizer.json
+├── data/                   # (optional) datasets, samples, exports
+└── README.md               # This file
+```
+
+> Large model files? Use **Git LFS** or a startup download step.
+
+---
+
+## 🔢 Decision Thresholds
+
+- If **class 1 = toxic** and your UI “Positive label” = **toxic** → set threshold to **`0.0487249419`**.
+- If you want “Positive label” = **non-toxic** instead, turn on **Invert probability (1 − p)** and use the **complement threshold**: `1 − 0.0487249419 = 0.9512750581`.
+
+You can change label names and threshold in the app’s **sidebar**.
+
+---
+
+## 💾 Data (YouTube IDs → Comments)
+
+This project’s comments were extracted **from YouTube video IDs** using the **YouTube Data API**. A typical pipeline:
+
+1. **Prepare video IDs**: a CSV or text file of `video_id`s.
+2. **Fetch comments** with the `commentThreads.list` endpoint (and optionally `comments.list` for replies).
+3. **Store** raw fields such as:
+   - `video_id`, `comment_id`, `textOriginal`, `likeCount`, `publishedAt`,
+   - `authorDisplayName`, `parentId` (if reply), `replyCount` (thread level).
+4. **Clean text** (strip markup, handle emojis, normalize whitespace).
+5. **Split** into train/val/test and apply **your tokenizer** for model training.
+
+**Environment variables** commonly used:
+```
+YOUTUBE_API_KEY=<your_api_key>
+```
+
+**Notes & compliance**:
+- Respect YouTube’s **Terms of Service**, data retention, and user privacy.
+- Observe **API quota limits**; paginate on `nextPageToken`.
+- Attribute responsibly and avoid redistributing personal data.
+
+---
+
+## 🧰 Setup
+
+### 1) Python Environment
+We recommend Python **3.9–3.11**.
+
+```bash
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+`requirements.txt` pins modern **TensorFlow (≥2.17)** and **Keras (≥3.3)** so models saved with **Keras 3** load correctly.
+
+### 2) Files Required
+Place your artifacts as follows:
+
+```
+models/
+  best.keras
+  tokenizer.json        # or tokenizer.zip containing tokenizer.json
+```
+
+---
+
+## ▶️ Run Locally
+
+```bash
+streamlit run app.py
+```
+Open the URL Streamlit prints (usually http://localhost:8501).
+
+---
+
+## ☁️ Deploy (Streamlit Community Cloud)
+
+1. Push repo to GitHub with the structure above.
+2. Go to https://share.streamlit.io and connect your repo.
+3. Set **Main file path** to `app.py` and deploy.
+
+> For big model files, use **Git LFS** or load from cloud storage on startup.
+
+---
+
+## 📄 License
 
 MIT (or your preferred license).
+
+---
+
+## 🙌 Acknowledgments
+
+- YouTube Data API for data access.
+- Keras / TensorFlow and Streamlit for the ML and UI stack
+- Neural Network Course and our guide Mohammad Saiful Islam (https://www.linkedin.com/in/mohammadsaifulislam/)
