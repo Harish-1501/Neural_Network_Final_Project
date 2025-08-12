@@ -79,21 +79,6 @@ You can also rename the positive/negative labels in the sidebar settings.
 
 ---
 
-## 🚀 Deploy on Streamlit Community Cloud
-
-1. Push your repository to GitHub with this layout:
-   - `app.py`
-   - `requirements.txt`
-   - `models/best.keras`
-   - `models/tokenizer.json` (or `models/tokenizer.zip`)
-
-2. Go to **https://share.streamlit.io** and connect your repo.
-3. Set **Main file path** to `app.py` and deploy.
-
-> Tip: Large model files can exceed GitHub’s free limits. If needed, use Git LFS or host the model on cloud storage and download it at app startup.
-
----
-
 ## ❗ Troubleshooting
 
 - **“Model not found”** — Ensure `models/best.keras` exists relative to `app.py`.
