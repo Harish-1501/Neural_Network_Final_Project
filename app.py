@@ -247,7 +247,7 @@ with left:
         else:
             with st.spinner("Tokenizing and running the model…"):
                 X = preprocess_texts([text], tokenizer, MAX_LEN)
-                prob =(1 - float(model.predict(X, verbose=0)[0][0]))
+                prob =(1- float(model.predict(X, verbose=0)[0][0]))
             label = pos_label if prob >= thresh else neg_label
 
             st.markdown(f"**Prediction:** `{label}`  <span class='chip'>{prob:.4f}</span>", unsafe_allow_html=True)
