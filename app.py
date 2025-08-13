@@ -250,7 +250,7 @@ with left:
                 prob =(1- float(model.predict(X, verbose=0)[0][0]))
             label = pos_label if prob >= thresh else neg_label
 
-            st.markdown(f"**Prediction:** `{label}`  <span class='chip'>{prob:.4f}</span>", unsafe_allow_html=True)
+            st.markdown(f"**Prediction:** `{label}`", unsafe_allow_html=True)
             st.progress(prob, text=f"Positive probability: {prob:.2%}")
             st.caption(
                 "Probability is the model's sigmoid output for the positive class."
